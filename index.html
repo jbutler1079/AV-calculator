@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AV Calculator</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>AV Calculator</h1>
+    <p class="subtitle">Audio/Visual calculations for professionals</p>
+  </header>
+
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="speaker">Speaker Impedance</button>
+    <button class="tab-btn" data-tab="spl">SPL</button>
+    <button class="tab-btn" data-tab="projector">Projector Throw</button>
+    <button class="tab-btn" data-tab="amplifier">Amplifier Power</button>
+    <button class="tab-btn" data-tab="cable">Cable Loss</button>
+  </nav>
+
+  <main>
+    <!-- Speaker Impedance Calculator -->
+    <section id="tab-speaker" class="tab-panel active">
+      <h2>Speaker Impedance (Parallel / Series)</h2>
+
+      <div class="form-group">
+        <label for="speaker-wiring">Wiring Type</label>
+        <select id="speaker-wiring">
+          <option value="parallel">Parallel</option>
+          <option value="series">Series</option>
+        </select>
+      </div>
+
+      <div id="speaker-inputs">
+        <div class="form-group">
+          <label for="speaker-ohms-1">Speaker 1 Impedance (Ω)</label>
+          <input type="number" id="speaker-ohms-1" min="0.1" step="0.1" placeholder="e.g. 8" />
+        </div>
+        <div class="form-group">
+          <label for="speaker-ohms-2">Speaker 2 Impedance (Ω)</label>
+          <input type="number" id="speaker-ohms-2" min="0.1" step="0.1" placeholder="e.g. 8" />
+        </div>
+      </div>
+
+      <button class="add-speaker-btn" id="add-speaker">+ Add Speaker</button>
+
+      <button class="calc-btn" onclick="calcSpeaker()">Calculate</button>
+      <div class="result" id="speaker-result"></div>
+    </section>
+
+    <!-- SPL Calculator -->
+    <section id="tab-spl" class="tab-panel">
+      <h2>Sound Pressure Level (SPL)</h2>
+
+      <div class="form-group">
+        <label for="spl-sensitivity">Speaker Sensitivity (dB @ 1W/1m)</label>
+        <input type="number" id="spl-sensitivity" step="0.1" placeholder="e.g. 89" />
+      </div>
+      <div class="form-group">
+        <label for="spl-power">Amplifier Power (W)</label>
+        <input type="number" id="spl-power" min="0.01" step="0.1" placeholder="e.g. 100" />
+      </div>
+      <div class="form-group">
+        <label for="spl-distance">Distance (m)</label>
+        <input type="number" id="spl-distance" min="0.1" step="0.1" placeholder="e.g. 5" />
+      </div>
+
+      <button class="calc-btn" onclick="calcSPL()">Calculate</button>
+      <div class="result" id="spl-result"></div>
+    </section>
+
+    <!-- Projector Throw Calculator -->
+    <section id="tab-projector" class="tab-panel">
+      <h2>Projector Throw Distance</h2>
+
+      <div class="form-group">
+        <label for="proj-mode">Calculate</label>
+        <select id="proj-mode">
+          <option value="distance">Throw Distance from Screen Width</option>
+          <option value="width">Screen Width from Throw Distance</option>
+        </select>
+      </div>
+      <div class="form-group" id="proj-input-a-group">
+        <label for="proj-input-a" id="proj-input-a-label">Screen Width (m)</label>
+        <input type="number" id="proj-input-a" min="0.1" step="0.01" placeholder="e.g. 3" />
+      </div>
+      <div class="form-group">
+        <label for="proj-ratio">Throw Ratio</label>
+        <input type="number" id="proj-ratio" min="0.1" step="0.01" placeholder="e.g. 1.5" />
+      </div>
+
+      <button class="calc-btn" onclick="calcProjector()">Calculate</button>
+      <div class="result" id="projector-result"></div>
+    </section>
+
+    <!-- Amplifier Power Calculator -->
+    <section id="tab-amplifier" class="tab-panel">
+      <h2>Amplifier Power</h2>
+
+      <div class="form-group">
+        <label for="amp-mode">Calculate from</label>
+        <select id="amp-mode">
+          <option value="vi">Voltage &amp; Impedance → Power</option>
+          <option value="pi">Power &amp; Impedance → Voltage</option>
+        </select>
+      </div>
+
+      <div id="amp-inputs-vi">
+        <div class="form-group">
+          <label for="amp-voltage">RMS Voltage (V)</label>
+          <input type="number" id="amp-voltage" min="0" step="0.1" placeholder="e.g. 20" />
+        </div>
+        <div class="form-group">
+          <label for="amp-impedance">Load Impedance (Ω)</label>
+          <input type="number" id="amp-impedance" min="0.1" step="0.1" placeholder="e.g. 8" />
+        </div>
+      </div>
+
+      <div id="amp-inputs-pi" style="display:none">
+        <div class="form-group">
+          <label for="amp-power">Power (W)</label>
+          <input type="number" id="amp-power" min="0" step="0.1" placeholder="e.g. 100" />
+        </div>
+        <div class="form-group">
+          <label for="amp-impedance-pi">Load Impedance (Ω)</label>
+          <input type="number" id="amp-impedance-pi" min="0.1" step="0.1" placeholder="e.g. 8" />
+        </div>
+      </div>
+
+      <button class="calc-btn" onclick="calcAmplifier()">Calculate</button>
+      <div class="result" id="amplifier-result"></div>
+    </section>
+
+    <!-- Cable Loss Calculator -->
+    <section id="tab-cable" class="tab-panel">
+      <h2>Speaker Cable Power Loss</h2>
+
+      <div class="form-group">
+        <label for="cable-gauge">Cable AWG</label>
+        <select id="cable-gauge">
+          <option value="0.3280">10 AWG (0.328 Ω/100m)</option>
+          <option value="0.5210">12 AWG (0.521 Ω/100m)</option>
+          <option value="0.8280" selected>14 AWG (0.828 Ω/100m)</option>
+          <option value="1.3150">16 AWG (1.315 Ω/100m)</option>
+          <option value="2.0900">18 AWG (2.090 Ω/100m)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="cable-length">One-way Cable Length (m)</label>
+        <input type="number" id="cable-length" min="0.1" step="0.1" placeholder="e.g. 30" />
+      </div>
+      <div class="form-group">
+        <label for="cable-impedance">Speaker Impedance (Ω)</label>
+        <input type="number" id="cable-impedance" min="0.1" step="0.1" placeholder="e.g. 8" />
+      </div>
+
+      <button class="calc-btn" onclick="calcCableLoss()">Calculate</button>
+      <div class="result" id="cable-result"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>AV Calculator &mdash; Built for audio/visual professionals</p>
+  </footer>
+
+  <script src="js/calculator.js"></script>
+</body>
+</html>
