@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AV Calculator – Assessed Value &amp; Property Tax</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header>
+    <div>
+      <div class="logo">AV Calculator</div>
+      <div class="subtitle">Assessed Value &amp; Property Tax Estimator</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ── Tab buttons ── -->
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" role="tab" aria-selected="true"
+              data-tab="panel-av">Assessed Value</button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+              data-tab="panel-tax">Tax Back-Solver</button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+              data-tab="panel-mtg">Mortgage Est.</button>
+    </div>
+
+    <div class="card">
+
+      <!-- ════════════════════════════════════════════════════
+           Panel 1 – Assessed Value & Annual Tax
+      ════════════════════════════════════════════════════ -->
+      <section id="panel-av" class="panel active" role="tabpanel">
+        <form id="av-form" novalidate>
+
+          <p class="form-section-title">Property Information</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="av-market-value">Market Value</label>
+              <div class="input-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input id="av-market-value" type="number" min="0" step="any"
+                       placeholder="e.g. 250000" required />
+              </div>
+              <span class="hint">Full market / appraised value of the property</span>
+            </div>
+
+            <div class="form-group">
+              <label for="av-assess-rate">Assessment Rate</label>
+              <div class="input-wrap has-suffix">
+                <input id="av-assess-rate" type="number" min="0.01" max="100" step="any"
+                       placeholder="e.g. 80" required />
+                <span class="suffix">%</span>
+              </div>
+              <span class="hint">Percentage of market value used for taxation</span>
+            </div>
+          </div>
+
+          <p class="form-section-title">Tax Information</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="av-mill-rate">Mill Rate (mills)</label>
+              <div class="input-wrap">
+                <input id="av-mill-rate" type="number" min="0" step="any"
+                       placeholder="e.g. 25.5" required />
+              </div>
+              <span class="hint">Tax per $1,000 of assessed value (1 mill = $1 per $1,000)</span>
+            </div>
+
+            <div class="form-group">
+              <label for="av-exemption">Homestead Exemption <em>(optional)</em></label>
+              <div class="input-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input id="av-exemption" type="number" min="0" step="any"
+                       placeholder="e.g. 25000" />
+              </div>
+              <span class="hint">Dollar amount deducted from assessed value before tax</span>
+            </div>
+          </div>
+
+          <p id="av-error" class="error-msg" role="alert"></p>
+
+          <div class="btn-row">
+            <button type="submit" class="btn btn-primary">Calculate</button>
+            <button type="button" id="av-reset" class="btn btn-secondary">Reset</button>
+          </div>
+        </form>
+
+        <!-- Results -->
+        <div id="av-results" class="results">
+          <p class="results-title">Results</p>
+          <div class="result-grid">
+            <div class="result-item">
+              <span class="result-label">Assessed Value</span>
+              <span class="result-value" id="av-out-assessed">—</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Taxable Value</span>
+              <span class="result-value" id="av-out-taxable">—</span>
+              <span class="result-sub">(after exemption)</span>
+            </div>
+            <div class="result-item highlight">
+              <span class="result-label">Annual Tax</span>
+              <span class="result-value" id="av-out-annual">—</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Monthly Tax</span>
+              <span class="result-value" id="av-out-monthly">—</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Effective Tax Rate</span>
+              <span class="result-value" id="av-out-effective">—</span>
+              <span class="result-sub">(% of market value)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <strong>How it works:</strong> Assessed Value = Market Value × Assessment Rate.
+          Taxable Value = Assessed Value − Homestead Exemption.
+          Annual Tax = Taxable Value × (Mill Rate ÷ 1,000).
+        </div>
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════
+           Panel 2 – Tax Back-Solver
+      ════════════════════════════════════════════════════ -->
+      <section id="panel-tax" class="panel" role="tabpanel">
+        <form id="tax-form" novalidate>
+
+          <p class="form-section-title">Known Values</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tax-assessed">Assessed Value</label>
+              <div class="input-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input id="tax-assessed" type="number" min="1" step="any"
+                       placeholder="e.g. 200000" required />
+              </div>
+              <span class="hint">The assessed (taxable) value of the property</span>
+            </div>
+
+            <div class="form-group">
+              <label for="tax-target">Target Annual Tax</label>
+              <div class="input-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input id="tax-target" type="number" min="0" step="any"
+                       placeholder="e.g. 4500" required />
+              </div>
+              <span class="hint">Desired or actual annual tax bill</span>
+            </div>
+          </div>
+
+          <p id="tax-error" class="error-msg" role="alert"></p>
+
+          <div class="btn-row">
+            <button type="submit" class="btn btn-primary">Solve Mill Rate</button>
+            <button type="button" id="tax-reset" class="btn btn-secondary">Reset</button>
+          </div>
+        </form>
+
+        <!-- Results -->
+        <div id="tax-results" class="results">
+          <p class="results-title">Results</p>
+          <div class="result-grid">
+            <div class="result-item highlight">
+              <span class="result-label">Required Mill Rate</span>
+              <span class="result-value" id="tax-out-mill">—</span>
+              <span class="result-sub">mills</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Effective Rate</span>
+              <span class="result-value" id="tax-out-effective">—</span>
+              <span class="result-sub">(% of assessed value)</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Monthly Tax</span>
+              <span class="result-value" id="tax-out-monthly">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <strong>How it works:</strong> Given your assessed value and desired tax bill,
+          this panel back-calculates the mill rate: Mill Rate = (Annual Tax ÷ Assessed Value) × 1,000.
+        </div>
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════
+           Panel 3 – Mortgage Estimator
+      ════════════════════════════════════════════════════ -->
+      <section id="panel-mtg" class="panel" role="tabpanel">
+        <form id="mtg-form" novalidate>
+
+          <p class="form-section-title">Loan Details</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="mtg-price">Home Price</label>
+              <div class="input-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input id="mtg-price" type="number" min="1" step="any"
+                       placeholder="e.g. 300000" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="mtg-down">Down Payment</label>
+              <div class="input-wrap has-suffix">
+                <input id="mtg-down" type="number" min="0" max="100" step="any"
+                       placeholder="e.g. 20" required />
+                <span class="suffix">%</span>
+              </div>
+              <span class="hint">Percentage of home price paid upfront</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="mtg-rate">Annual Interest Rate</label>
+              <div class="input-wrap has-suffix">
+                <input id="mtg-rate" type="number" min="0" step="any"
+                       placeholder="e.g. 6.75" required />
+                <span class="suffix">%</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="mtg-term">Loan Term</label>
+              <div class="input-wrap has-suffix">
+                <input id="mtg-term" type="number" min="1" max="50" step="1"
+                       placeholder="e.g. 30" required />
+                <span class="suffix">yrs</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="form-section-title">Taxes &amp; Insurance <em>(optional)</em></p>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="mtg-tax">Annual Property Tax</label>
+              <div class="input-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input id="mtg-tax" type="number" min="0" step="any"
+                       placeholder="e.g. 3600" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="mtg-insurance">Annual Homeowners Insurance</label>
+              <div class="input-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input id="mtg-insurance" type="number" min="0" step="any"
+                       placeholder="e.g. 1200" />
+              </div>
+            </div>
+          </div>
+
+          <p id="mtg-error" class="error-msg" role="alert"></p>
+
+          <div class="btn-row">
+            <button type="submit" class="btn btn-primary">Calculate Payment</button>
+            <button type="button" id="mtg-reset" class="btn btn-secondary">Reset</button>
+          </div>
+        </form>
+
+        <!-- Results -->
+        <div id="mtg-results" class="results">
+          <p class="results-title">Monthly Payment Breakdown</p>
+          <div class="result-grid">
+            <div class="result-item">
+              <span class="result-label">Loan Amount</span>
+              <span class="result-value" id="mtg-out-loan">—</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Principal &amp; Interest</span>
+              <span class="result-value" id="mtg-out-principal">—</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Property Tax</span>
+              <span class="result-value" id="mtg-out-taxes">—</span>
+              <span class="result-sub">per month</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Insurance</span>
+              <span class="result-value" id="mtg-out-insurance">—</span>
+              <span class="result-sub">per month</span>
+            </div>
+            <div class="result-item highlight">
+              <span class="result-label">Total Monthly (PITI)</span>
+              <span class="result-value" id="mtg-out-total">—</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Total Paid (life of loan)</span>
+              <span class="result-value" id="mtg-out-total-paid">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <strong>Note:</strong> This is an estimate only. Actual payments may vary based on
+          lender fees, PMI, HOA dues, and other costs. Consult a licensed mortgage professional
+          for precise figures.
+        </div>
+      </section>
+
+    </div><!-- /.card -->
+  </main>
+
+  <footer>
+    AV Calculator &copy; 2026 &mdash; For estimation purposes only. Not financial or legal advice.
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
